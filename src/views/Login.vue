@@ -2,43 +2,74 @@
   <div class="login">
     <div class="form-group">
       <h2>RaSa Library</h2>
+      <!-- Email Field -->
+      <div class="form-control">
+        <input
+          type="email"
+          v-model="v$.input.email.$model"
+          name="email"
+          autocomplete="chrome-off"
+          class="form-control"
+          placeholder="Email"
+        />
+        <div
+          class="input-errors"
+          v-for="(error, index) of v$.input.email.$errors"
+          :key="index"
+        >
+          <span class="error">{{ error.$message }}</span>
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-control">
+        <input
+          type="password"
+          v-model="v$.input.password.$model"
+          name="password"
+          autocomplete="chrome-off"
+          class="form-control"
+          placeholder="Password"
+        />
+        <div
+          class="input-errors"
+          v-for="(error, index) of v$.input.password.$errors"
+          :key="index"
+        >
+          <span class="error">{{ error.$message }}</span>
+        </div>
+      </div>
+      <!-- Submit Button -->
+
       <input
-        type="email"
-        v-model="input.email"
-        name="email"
-        autocomplete="chrome-off"
-        class="form-control"
-        placeholder="Email"
+        :disabled="v$.input.$invalid"
+        class="form-submit"
+        type="submit"
+        value="Login"
+        @click="login"
       />
-      <input
-        type="password"
-        v-model="input.password"
-        name="password"
-        autocomplete="chrome-off"
-        class="form-control"
-        placeholder="Password"
-      />
-      <br />
-      <input class="form-submit" type="submit" value="Login" @click="login" />
+
+      <span class="error">{{ error }}</span>
     </div>
-    <p class="error">{{ error.login }}</p>
   </div>
 </template>
 
 <script>
+import useVuelidate from "@vuelidate/core";
+import { required, email, minLength } from "@vuelidate/validators";
+
 export default {
   name: "Login",
+  setup() {
+    return { v$: useVuelidate() };
+  },
   data() {
     return {
       input: {
         email: "",
         password: "",
       },
-      error: {
-        email: "",
-        password: "",
-        login: "",
-      },
+      error: "",
     };
   },
   methods: {
@@ -50,12 +81,20 @@ export default {
       } catch (err) {
         console.log(err);
         if (err.type === "server") {
-          this.error.login = `${err.code}: ${err.message}`;
+          this.error = `${err.code}: ${err.message}`;
         } else {
-          this.error.login = err.message;
+          this.error = err.message;
         }
       }
     },
+  },
+  validations() {
+    return {
+      input: {
+        email: { required, email },
+        password: { required, min: minLength(6) },
+      },
+    };
   },
 };
 </script>
@@ -71,32 +110,72 @@ export default {
 }
 
 .form-group {
-  width: 240px;
+  width: 100%;
   height: 240px;
   font-family: Montserrat;
+  display: flex;
+  flex-direction: column;
+  justify-self: center;
+  align-items: center;
 }
 
 .form-control {
+  width: 240px;
+  margin-bottom: 20px;
+}
+
+.form-control input {
   width: 100%;
   height: 42px;
   box-sizing: border-box;
   border-radius: 5px;
   border: 1px solid #ccc;
-  margin-bottom: 20px;
   font-size: 14px;
   font-family: Montserrat;
   padding: 0 10px 0 10px;
   outline: none;
+  margin: 0;
+}
+
+.input-errors {
+  overflow: auto;
 }
 
 .form-submit {
   font-size: 16px;
   font-family: Montserrat;
+  margin-bottom: 12px;
 }
 
 .error {
   color: red;
-  font-size: 16px;
-  margin: 0;
+  font-size: 14px;
+  float: left;
+  padding-left: 4px;
+}
+
+@media screen and (max-width: 300px) {
+  .form-control {
+    width: 200px;
+    margin-bottom: 10px;
+  }
+
+  .form-control input {
+    width: 200px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .form-submit {
+    font-size: 12px;
+    margin-bottom: 6x;
+  }
+
+  .error {
+    color: red;
+    font-size: 10px;
+    float: left;
+    padding-left: 4px;
+  }
 }
 </style>
